@@ -63,6 +63,6 @@ const App = () => {
 
 #
 ## *Backend de carga de archivos*
-El proyecto de frontend para ejecutar este laboratorio lo pueden encontrar en este link: [Queues.Rabbit.Learning]()
+El proyecto de backend para ejecutar este laboratorio lo pueden encontrar en este link: [Queues.Rabbit.Learning](https://github.com/chelobone/rabbitmqdemo)
 
 #
