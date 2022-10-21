@@ -1,46 +1,68 @@
-# Getting Started with Create React App
+# Laboratorio para uso de Cognito
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Cognito](https://www.solodev.com/file/2f5b95bd-b20c-11ea-904e-0eb0590535cd/Amazon_Cognito_Icon-b7c2579c.jpg)
 
-## Available Scripts
+### Este es un laboratorio para entender como funcionan nos integramos con este servicio de AWS. Cognito es un servicio de administración de control de acceso e inicio de sesión. Con esto, podemos combinar varios tipos de sesión (OIDC, SAML, FBA). Este demo apunta a utilizar Cognito para estas configuraciones.
 
-In the project directory, you can run:
+Para integrarnos, debemos usar la librería `aws-amplify` y `aws-sdk`
 
-### `npm start`
+Deben crear un archivo .env
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```bash
+HTTPS=true
+API_URL=https://localhost:{puerto-local}
+API_CONTROLLER=/api/customer
+AWS_COGNITO_REDIRECTSIGNIN=http://localhost:3000
+AWS_COGNITO_REDIRECTSIGNOUT=http://localhost:3000/signin
+AWS_COGNITO_DOMAN={domain}.auth.us-east-1.amazoncognito.com
+AWS_REGION={region}
+AWS_USER_POOL={pool}
+AWS_POOL_WEB_CLIENTID={clientid}
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- [App.tsx](src/App.tsx): en este archivo se configura la autenticación con cognito
 
-### `npm test`
+```javascript
+AWS.config.region = region;
+Amplify.configure({
+  Auth: {
+    //identityPoolId: "us-east-xxxxx" // OPTIONAL - Amazon Cognito Identity Pool ID
+    region: region, // REQUIRED - Amazon Cognito Region
+    userPoolId: userPoolId, // REQUIRED - Amazon Cognito User Pool ID
+    userPoolWebClientId: userPoolWebClientId, // OPTIONAL - Amazon Cognito Web Client ID
+    oauth: {
+      domain: domain,
+      scope: [
+        "email",
+        "openid",
+        "profile",
+        "aws.cognito.signin.user.admin"
+      ],
+      redirectSignIn: signInUrl,
+      redirectSignOut: signOutUrl,
+      responseType: "token"
+    }
+  }
+});
+```
+- [Admin.tsx](src/components/Admin.tsx): Contene un formulario de ejemplo para hacer pruebas de carga hacia RabbitMQ. Este componente se muestra solo si estás logueado a la aplicación.
+- [Login.tsx](src/security/Login.tsx): Es el componente que tiene el botón para ir al proveedor de autenticación de Cognito.
+- [ProtectedRoute.tsx](src/security/ProtectedRoute.tsx): Es un componente que funciona como Wrapper para los componentes que deben ser visualizados si estás logueado. Se implementa en el [App.tsx](src/App.tsx)
+```javascript
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/signin" element={<Login />} />
+        <Route path="/" element={<ProtectedRoute component={Admin} />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#
+## *Backend de carga de archivos*
+El proyecto de frontend para ejecutar este laboratorio lo pueden encontrar en este link: [Queues.Rabbit.Learning]()
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+#
